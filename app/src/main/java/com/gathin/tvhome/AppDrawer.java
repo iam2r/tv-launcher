@@ -487,6 +487,22 @@ final class AppDrawer {
                 }
             } else if (glyph) {
                 surface.setBackground(SlotCard.neutral(density));
+            } else if (inFolder) {
+                // Inside the system-apps nest every app keeps its card, but the icon is drawn whole and
+                // smaller: these icons are detailed (gears, tiles, meters) and cropping them to fill the card
+                // cuts the artwork off.
+                SlotCard.Look look = SlotCard.look(item.pkg, item.icon, null, item.info,
+                        activity.getPackageManager(), density);
+                surface.setBackground(look.fill != null ? look.fill : SlotCard.neutral(density));
+                art.setImageDrawable(item.icon);
+                art.setVisibility(View.VISIBLE);
+                art.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                int pad = Math.round(cardHeight * 0.20f);
+                art.setPadding(pad, pad, pad, pad);
+                name.setText(item.label);
+                card.setContentDescription(item.label);
+                card.setOnClickListener(v -> open(item));
+                return;
             } else {
                 SlotCard.Look look = SlotCard.look(item.pkg, item.icon, null, item.info,
                         activity.getPackageManager(), density);
