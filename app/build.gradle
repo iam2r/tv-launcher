@@ -10,8 +10,8 @@ android {
         applicationId 'com.gathin.tvhome'
         minSdk 26
         targetSdk 34
-        versionCode 5
-        versionName '2.4.0'
+        versionCode 6
+        versionName '2.4.1'
     }
 
     // A published build must be signed with the same key every time, or TVs refuse the update. The key comes
