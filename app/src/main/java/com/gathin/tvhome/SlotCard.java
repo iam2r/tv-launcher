@@ -281,10 +281,42 @@ final class SlotCard {
     /** A flat card in the app's lifted ground colour, a touch lighter at the top. */
     private static Drawable ground(int color, float density) {
         GradientDrawable card = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{lighten(color, 1.10f), darken(color, 0.78f)});
+                new int[]{lighten(color, 1.08f), darken(color, 0.86f)});
         card.setCornerRadius(RADIUS_DP * density);
         card.setStroke(Math.round(density), 0x22FFFFFF);
         return card;
+    }
+
+    /**
+     * A card tinted with the icon's own average colour, for icons that have no flat ground of their own (a
+     * glyph on transparency, which is most system apps). The reference launcher gives every app in its
+     * system-apps grid such a coloured card - teal for Settings, blue for Camera, purple for Media Centre -
+     * where a charcoal card leaves the grid looking switched off.
+     */
+    static Drawable tint(Drawable icon, float density) {
+        Bitmap bitmap = render(icon);
+        if (bitmap == null) return neutral(density);
+        int[] pixels = new int[SAMPLE * SAMPLE];
+        bitmap.getPixels(pixels, 0, SAMPLE, 0, 0, SAMPLE, SAMPLE);
+        bitmap.recycle();
+        long r = 0, g = 0, b = 0, weight = 0;
+        for (int p : pixels) {
+            int alpha = Color.alpha(p);
+            if (alpha < 40) continue;
+            r += (long) Color.red(p) * alpha;
+            g += (long) Color.green(p) * alpha;
+            b += (long) Color.blue(p) * alpha;
+            weight += alpha;
+        }
+        if (weight == 0) return neutral(density);
+        float[] hsv = new float[3];
+        Color.colorToHSV(Color.rgb((int) (r / weight), (int) (g / weight), (int) (b / weight)), hsv);
+        // The reference takes the icon's own average colour as the card; measured against it (Media Centre
+        // icon mean 174,114,238 -> card 183,77,251) it boosts saturation and keeps the value. The value is
+        // only held inside a band so the card neither turns black nor swallows a white logo.
+        hsv[1] = Math.min(0.90f, hsv[1] * 1.3f);
+        hsv[2] = Math.max(0.34f, Math.min(0.90f, hsv[2]));
+        return ground(Color.HSVToColor(hsv), density);
     }
 
     /** The calm card: charcoal tinted with the app's colour, for artwork that already stands on its own. */

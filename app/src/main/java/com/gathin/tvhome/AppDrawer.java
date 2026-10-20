@@ -478,6 +478,10 @@ final class AppDrawer {
             if (glyph) add.setText("\u00D7");
             art.setImageDrawable(null);
             art.setVisibility(View.GONE);
+            // Reset what the nest's contained-icon branch changes, or recycled cards keep that styling when
+            // the list goes back to the drawer (icons drawn fit-and-padded inside an empty card).
+            art.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            art.setPadding(0, 0, 0, 0);
             logo.setImageDrawable(null);
             logo.setVisibility(View.GONE);
             if (isFolder) {
@@ -493,7 +497,9 @@ final class AppDrawer {
                 // cuts the artwork off.
                 SlotCard.Look look = SlotCard.look(item.pkg, item.icon, null, item.info,
                         activity.getPackageManager(), density);
-                surface.setBackground(look.fill != null ? look.fill : SlotCard.neutral(density));
+                // The card is this app's own colour, so the grid keeps the reference's coloured cards; the icon is
+                // drawn whole on top of it.
+                surface.setBackground(SlotCard.tint(item.icon, density));
                 art.setImageDrawable(item.icon);
                 art.setVisibility(View.VISIBLE);
                 art.setScaleType(ImageView.ScaleType.FIT_CENTER);
