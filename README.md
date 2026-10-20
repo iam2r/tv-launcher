@@ -8,6 +8,17 @@ Built for a 1.3 GB / MediaTek TV running Android 9, and kept small on purpose: *
 
 ![Home](docs/screenshots/home.png)
 
+<sub>Captured on a Hisense Android 9 TV at 1920×1080, from the build in this repository.</sub>
+
+| | |
+|---|---|
+| ![Up-toolbar](docs/screenshots/toolbar.png) | ![App drawer](docs/screenshots/drawer.png) |
+| **Up** brings out the toolbar: File share, Wi-Fi, Settings. A connection dot stays in the corner otherwise. | **Down** opens every app, five cards per row, system apps folded into one folder. |
+| ![Slot picker](docs/screenshots/slot-picker.png) | ![System apps](docs/screenshots/folder-system-apps.png) |
+| **MENU** on a slot re-opens the drawer as a picker: choose what that slot holds. | The system-apps folder, entered from the drawer. |
+| ![Uninstall](docs/screenshots/drawer-uninstall.png) | ![File share](docs/screenshots/file-share.png) |
+| **MENU** on an app offers Uninstall — never shown for a system app. | **File share**: scan, send an APK from a phone, install it; received files stay listed. |
+
 ## What it does
 
 - **Shelf Home** — one row of nest slots instead of every app. Large cards, dim labels, the rest of the
