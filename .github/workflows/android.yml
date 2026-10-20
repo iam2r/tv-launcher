@@ -23,11 +23,15 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
+      # The ubuntu runner already carries the Android SDK; only the two packages this build needs are added.
+      # (android-actions/setup-android@v3 currently fails on the removed "tools" package.)
       - name: Install platform and build tools
-        run: sdkmanager --install "platforms;android-34" "build-tools;34.0.0"
+        run: |
+          set -e
+          echo "$ANDROID_HOME"
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager --install "platforms;android-34" "build-tools;34.0.0" > /dev/null
+          sdkmanager --list_installed | sed -n '1,12p'
 
       - name: Unit tests
         run: ./gradlew --no-daemon testReleaseUnitTest
