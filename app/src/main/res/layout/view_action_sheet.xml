@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  One app's actions in the drawer, opened with the remote's MENU key. A scrim plus a short list: enough to be
+  deliberate, small enough not to cover the row it acts on.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/actionScrim"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#99000000"
+    android:focusable="true"
+    android:clickable="true"
+    android:descendantFocusability="afterDescendants">
+
+    <LinearLayout
+        android:id="@+id/actionPanel"
+        android:layout_width="360dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="80dp"
+        android:background="@drawable/glass_panel"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/actionPrimary"
+            style="@style/SettingsRow"
+            />
+
+        <TextView
+            android:id="@+id/actionCancel"
+            style="@style/SettingsRow"
+            android:layout_marginTop="8dp"
+            android:text="@string/cancel" />
+    </LinearLayout>
+</FrameLayout>

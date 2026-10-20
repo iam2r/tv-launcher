@@ -1,0 +1,64 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.gathin.tvhome'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.gathin.tvhome'
+        minSdk 26
+        targetSdk 34
+        versionCode 5
+        versionName '2.4.0'
+    }
+
+    // A published build must be signed with the same key every time, or TVs refuse the update. The key comes
+    // from the environment (CI secrets); without it a release build is signed with the debug key, which is
+    // fine for sideloading over ADB but not for distributing updates.
+    def keystorePath = System.getenv('SIGNING_KEYSTORE')
+    signingConfigs {
+        if (keystorePath) {
+            release {
+                storeFile file(keystorePath)
+                storePassword System.getenv('SIGNING_STORE_PASSWORD')
+                keyAlias System.getenv('SIGNING_KEY_ALIAS')
+                keyPassword System.getenv('SIGNING_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // R8 strips and optimises the code (AndroidX included): smaller APK, faster start on a slow TV CPU.
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig keystorePath ? signingConfigs.release : signingConfigs.debug
+        }
+        debug {
+            applicationIdSuffix ''
+        }
+    }
+
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/*.kotlin_module', 'META-INF/LICENSE*', 'META-INF/NOTICE*']
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
+    // QR code for the file-share screen (Apache-2.0). R8 keeps only the encoder it uses.
+    implementation 'com.google.zxing:core:3.5.3'
+    // Test only (never in the APK): plain JVM tests for the module card validators, src/test.
+    testImplementation 'junit:junit:4.13.2'
+}

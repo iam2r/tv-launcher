@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 快传: the QR the phone scans, the link as text, and one status line. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/shareRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF0B0B0D">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="72dp"
+        android:paddingEnd="72dp"
+        android:paddingTop="40dp"
+        android:paddingBottom="40dp">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFFFF"
+            android:padding="18dp">
+
+            <ImageView
+                android:id="@+id/shareQr"
+                android:layout_width="300dp"
+                android:layout_height="300dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/fast_share_qr" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="56dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/fast_share"
+                android:textColor="#FFFFFFFF"
+                android:textSize="34sp"
+                android:fontFamily="@font/outfit_light"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:id="@+id/shareUrl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:textColor="#B3FFFFFF"
+                android:textSize="17sp"
+                android:fontFamily="@font/outfit_regular" />
+
+            <TextView
+                android:id="@+id/shareStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="26dp"
+                android:text="@string/fast_share_waiting"
+                android:textColor="#8AB4F8"
+                android:textSize="19sp"
+                android:fontFamily="@font/outfit_medium" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/fast_share_help"
+                android:textColor="#66FFFFFF"
+                android:textSize="15sp"
+                android:fontFamily="@font/outfit_regular" />
+
+            <!-- Files already received: OK installs one, MENU deletes it. Hidden while the inbox is empty. -->
+            <TextView
+                android:id="@+id/shareFilesTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:text="@string/fast_share_received_files"
+                android:textColor="#99FFFFFF"
+                android:textSize="15sp"
+                android:fontFamily="@font/outfit_medium"
+                android:letterSpacing="0.04"
+                android:visibility="gone" />
+
+            <ScrollView
+                android:id="@+id/shareFilesScroll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                android:scrollbars="none"
+                android:overScrollMode="never">
+
+                <LinearLayout
+                    android:id="@+id/shareFiles"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+            </ScrollView>
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

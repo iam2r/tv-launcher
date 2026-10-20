@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  One nest slot on a shelf Home (config.xml shelf_mode).
+
+  Proportions measured off Dangbei 4.1.6 on a 1080p screen and rebuilt here: a 150x84dp card (300x168 px
+  there), 15dp corners, a small dim name under it. What fills the card comes from SlotCard: the app's TV
+  banner when it ships one, otherwise the background layer of its adaptive icon with the line-art foreground
+  drawn on top, otherwise the icon's lifted ground colour. Nothing is taken from Dangbei's files.
+
+  slotSurface and slotName copy the card's focused state, so the ring and the name brighten together while
+  the card itself stays a transparent, focusable box.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <FrameLayout
+        android:id="@+id/slotCard"
+        android:layout_width="150dp"
+        android:layout_height="108dp"
+        android:layout_gravity="center_horizontal|top"
+        android:focusable="true"
+        android:clickable="true">
+
+        <FrameLayout
+            android:id="@+id/slotSurface"
+            android:layout_width="150dp"
+            android:layout_height="84dp"
+            android:background="@drawable/slot_card_empty"
+            android:clipToOutline="true"
+            android:duplicateParentState="true"
+            android:foreground="@drawable/slot_ring">
+
+            <!-- The card image: a banner, an adaptive background, or the icon itself. -->
+            <ImageView
+                android:id="@+id/slotArt"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@null" />
+
+            <!-- The line-art logo, drawn on the adaptive background. -->
+            <ImageView
+                android:id="@+id/slotLogo"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                android:contentDescription="@null" />
+
+            <!-- Folder preview: four mini icons, the "system apps" nest. -->
+            <LinearLayout
+                android:id="@+id/slotFolder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/slotFolder0"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_margin="3dp"
+                        android:contentDescription="@null" />
+
+                    <ImageView
+                        android:id="@+id/slotFolder1"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_margin="3dp"
+                        android:contentDescription="@null" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/slotFolder2"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_margin="3dp"
+                        android:contentDescription="@null" />
+
+                    <ImageView
+                        android:id="@+id/slotFolder3"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_margin="3dp"
+                        android:contentDescription="@null" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Empty slot: a quiet plus on a dashed card, and the name below says what pressing it does. -->
+            <TextView
+                android:id="@+id/slotAdd"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/slot_add_glyph"
+                android:textColor="#80FFFFFF"
+                android:textSize="30sp"
+                android:fontFamily="@font/outfit_light"
+                android:includeFontPadding="false" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/slotName"
+            android:layout_width="170dp"
+            android:layout_height="22dp"
+            android:layout_gravity="center_horizontal|top"
+            android:layout_marginTop="90dp"
+            android:gravity="center"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:duplicateParentState="true"
+            android:textColor="@color/slot_label"
+            android:textSize="16sp"
+            android:fontFamily="@font/outfit_medium"
+            android:letterSpacing="0.01" />
+    </FrameLayout>
+</FrameLayout>
