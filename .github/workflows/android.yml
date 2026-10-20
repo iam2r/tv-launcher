@@ -28,10 +28,18 @@ jobs:
       - name: Install platform and build tools
         run: |
           set -e
-          echo "$ANDROID_HOME"
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager --install "platforms;android-34" "build-tools;34.0.0" > /dev/null
-          sdkmanager --list_installed | sed -n '1,12p'
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          export ANDROID_HOME="$SDK" ANDROID_SDK_ROOT="$SDK"
+          echo "SDK: $SDK"
+          ls "$SDK/platforms" || true
+          if [ -d "$SDK/platforms/android-34" ] && [ -d "$SDK/build-tools/34.0.0" ]; then
+            echo "platform 34 and build-tools 34.0.0 already present"
+            exit 0
+          fi
+          SDKMANAGER=$(find "$SDK/cmdline-tools" -type f -name sdkmanager | head -1)
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" --install "platforms;android-34" "build-tools;34.0.0" > /dev/null
 
       - name: Unit tests
         run: ./gradlew --no-daemon testReleaseUnitTest
