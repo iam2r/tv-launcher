@@ -3,7 +3,7 @@
 A small, fast home screen for Android TV boxes and TVs that have become slow because of their stock
 launcher: no feed, no ads, no telemetry, one process, no background service.
 
-Built for a 1.3 GB / MediaTek TV running Android 9, and kept small on purpose: **one APK under 400 KB**,
+Built for a 1.3 GB / MediaTek TV running Android 9, and kept small on purpose: **one APK around 320 KB**,
 ~50 MB of memory for Home, and nothing running when you are not looking at it.
 
 ![Home](docs/screenshots/home.png)
