@@ -3,15 +3,15 @@ plugins {
 }
 
 android {
-    namespace 'com.gathin.tvhome'
+    namespace 'com.iam2r.tvlauncher'
     compileSdk 34
 
     defaultConfig {
-        applicationId 'com.gathin.tvhome'
+        applicationId 'com.iam2r.tvlauncher'
         minSdk 26
         targetSdk 34
-        versionCode 12
-        versionName '2.6.2'
+        versionCode 13
+        versionName '2.6.3'
     }
 
     // A published build must be signed with the same key every time, or TVs refuse the update. The key comes

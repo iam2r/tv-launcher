@@ -1,6 +1,5 @@
 MIT License
 
-Copyright (c) 2026 Gathin (CleanYourTV, https://github.com/gathin/cleanyourtv)
 Copyright (c) 2026 tv-launcher contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,6 +22,6 @@ SOFTWARE.
 
 ---
 
-The Outfit typeface in launcher/app/src/main/res/font/outfit.ttf is copyright
+The Outfit typeface in app/src/main/res/font/outfit_light.ttf is copyright
 The Outfit Project Authors and licensed under the SIL Open Font License 1.1,
-see launcher/FONT-LICENSE-OFL.txt.
+see FONT-LICENSE-OFL.txt.

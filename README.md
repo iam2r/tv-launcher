@@ -50,7 +50,7 @@ Built for a 1.3 GB / MediaTek TV running Android 9, and kept small on purpose: *
 ```bash
 adb connect <tv-ip>:5555
 adb install -r tv-launcher-2.4.0-universal.apk
-adb shell cmd package set-home-activity com.gathin.tvhome/.MainActivity
+adb shell cmd package set-home-activity com.iam2r.tvlauncher/.MainActivity
 ```
 
 On a TV this was not tuned for, the Home arrives with empty nests: press `MENU` on one, pick an app, and it
@@ -101,11 +101,6 @@ Everything lives in `app/src/main/res/values/config.xml`; a theme can override t
 ## Licence and credits
 
 MIT — see [LICENSE](LICENSE).
-
-This project started as a fork of [CleanYourTV](https://github.com/gathin/cleanyourtv) by Gathin (MIT): the
-Home activity, its configuration system, the settings screens and the screensaver come from there. What was
-added here is the shelf Home, the app drawer and its picker, the icon pipeline, the Up-toolbar, file share
-and the uninstall sheet. Original copyright notices are kept in `LICENSE`.
 
 The launcher bundles the Outfit font (SIL Open Font License, see `FONT-LICENSE-OFL.txt`) and uses ZXing
 core (Apache-2.0) to draw the file-share QR code.
