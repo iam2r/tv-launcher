@@ -3,7 +3,7 @@
 A small, fast home screen for Android TV boxes and TVs that have become slow because of their stock
 launcher: no feed, no ads, no telemetry, one process, no background service.
 
-Built for a 1.3 GB / MediaTek TV running Android 9, and kept small on purpose: **one APK under 450 KB**,
+Built for a 1.3 GB / MediaTek TV running Android 9, and kept small on purpose: **one APK under 400 KB**,
 ~50 MB of memory for Home, and nothing running when you are not looking at it.
 
 ![Home](docs/screenshots/home.png)
@@ -43,6 +43,7 @@ Built for a 1.3 GB / MediaTek TV running Android 9, and kept small on purpose: *
   `arm64-v8a`, `x86` and `x86_64`.
 - A remote with a D-pad. A `MENU` key gives you the extra actions; `OK` long-press does the same where the
   remote lacks one.
+- English or Simplified Chinese. Nothing else is shipped; the language follows the TV's own.
 
 ## Install
 
@@ -51,6 +52,11 @@ adb connect <tv-ip>:5555
 adb install -r tv-launcher-2.4.0-universal.apk
 adb shell cmd package set-home-activity com.gathin.tvhome/.MainActivity
 ```
+
+On a TV this was not tuned for, the Home arrives with empty nests: press `MENU` on one, pick an app, and it
+stays there. Nothing is assumed about which apps you have. If a key or a source does not work on your board,
+the keys in [Configuration](#configuration) below cover the usual per-brand differences (Live TV package,
+source panel service, remote Settings button by scancode or keycode).
 
 To go back to the stock launcher:
 
@@ -86,10 +92,10 @@ Everything lives in `app/src/main/res/values/config.xml`; a theme can override t
 |---|---|---|
 | `shelf_mode` | `true` here | one row of nest slots, everything else behind the Down key |
 | `slot_count` | `5` | number of nests (1–8) |
-| `dock_apps` | — | what the slots hold until you pick something on the TV |
+| `dock_apps` | empty | what the nests hold on a fresh install; empty means "nothing until you pin it" |
 | `columns` | `5` | tiles per row (classic grid mode) |
 | `reduced_motion` | `true` | calmer springs and fades for weak GPUs |
-| `hidden_apps` | — | packages never shown as tiles |
+| `hidden_apps` | empty | packages never shown as tiles |
 | `show_stats` | `false` | CPU / memory / storage line under the clock |
 
 ## Licence and credits

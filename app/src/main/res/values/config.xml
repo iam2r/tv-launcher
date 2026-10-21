@@ -8,12 +8,10 @@
 <resources>
 
     <!-- Apps pinned to the dock row at the bottom, in this order. Missing apps are skipped. -->
+    <!-- Empty on purpose: a published build must not arrive with someone else's apps on the Home. On a fresh
+         install the nests are empty and each one says what pressing it does; MENU on a nest pins an app.
+         Fill this in (package names, or through a theme's config.json) to ship your own arrangement. -->
     <string-array name="dock_apps">
-        <item>com.huawei.himovceie</item>
-        <item>com.ktcp.video</item>
-        <item>org.smarttube.stable</item>
-        <item>com.netease.cloudmusic.tv</item>
-        <item>com.github.metacubex.clash.meta</item>
     </string-array>
     <!-- With fewer dock_apps than columns (or a dock app that is not installed), the free dock slots take
          the first grid apps, so the dock never shows a gap. false leaves them empty (#162); a theme can
@@ -22,8 +20,6 @@
 
     <!-- Apps never shown as tiles (e.g. the Live TV app, which the Inputs menu already covers). -->
     <string-array name="hidden_apps">
-        <item>com.mediatek.wwtv.tvcenter</item>
-        <item>com.mitv.gallery</item>
     </string-array>
 
     <!-- The TV's Live TV / tuner app, offered at the end of the Inputs menu. Leave empty to omit. -->
