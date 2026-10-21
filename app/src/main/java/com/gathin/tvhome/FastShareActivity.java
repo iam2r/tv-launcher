@@ -56,6 +56,15 @@ public class FastShareActivity extends Activity implements FastShare.Listener {
     private LinearLayout files;
 
     @Override
+
+    protected void attachBaseContext(android.content.Context base) {
+
+        super.attachBaseContext(Lang.wrap(base));
+
+    }
+
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fast_share);

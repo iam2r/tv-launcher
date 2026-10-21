@@ -92,5 +92,13 @@
             style="@style/SettingsRow"
             android:layout_marginTop="18dp"
             android:text="@string/tv_settings" />
+
+        <!-- What this launcher could probe on this TV: brand, inputs, Live TV entry, keys. Read-only, so a
+             report can be read off the screen on a TV this was not tuned for. -->
+        <TextView
+            android:id="@+id/reportChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="18dp"
+            android:text="@string/report_row" />
     </LinearLayout>
 </ScrollView>

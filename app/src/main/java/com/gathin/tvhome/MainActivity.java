@@ -86,6 +86,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private static final int LAUNCHER_SETTINGS_REQUEST = 42;
     /** Sent by QuickSettingsActivity: open Launcher settings from here so Home rebuilds when they close. */
     static final String ACTION_LAUNCHER_SETTINGS = "com.gathin.tvhome.action.LAUNCHER_SETTINGS";
+    /** Preference: the clock runs 24-hour (true) or 12-hour with am/pm (false). Chosen in the panel. */
+    static final String CLOCK_24H = "clock_24h";
     /** Tiles per row and dock slots (res/values/config.xml, columns). Set in onCreate. */
     static int COLUMNS = 4;
     private boolean rtlAppGrid;
@@ -244,9 +246,20 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     };
 
     @Override
+
+    protected void attachBaseContext(android.content.Context base) {
+
+        super.attachBaseContext(Lang.wrap(base));
+
+    }
+
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        appliedLangChoice = Lang.chosen(this);
+        applyClockFormat();
         density = getResources().getDisplayMetrics().density;
         // config.xml, overlaid by config.json from a pushed theme (see Config and tools/theme.sh).
         Config cfg = Config.load(this);
@@ -446,7 +459,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             open(systemIntent(Settings.ACTION_WIFI_SETTINGS));
             return true;
         });
-        btnSettings.setOnClickListener(v -> open(systemIntent(Settings.ACTION_SETTINGS)));
+        // The pill opens the launcher's own panel (time format, language, and the way to both settings
+        // screens); the TV's settings are one row further, not the first thing a press does.
+        btnSettings.setOnClickListener(v -> startActivity(new Intent(this, QuickSettingsActivity.class)));
         btnReorder = findViewById(R.id.btnReorder);
         btnReorder.setOnClickListener(v -> toggleReorder());
         btnReorder.setVisibility(cfg.reorderButton ? View.VISIBLE : View.GONE);
@@ -623,6 +638,25 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
     }
 
+    /** The language choice this instance was built with; a different one in the panel rebuilds it. */
+    private String appliedLangChoice = "";
+
+    /**
+     * The clock's format follows the panel, not the TV's system setting: 24-hour by default, 12-hour with
+     * am/pm when the owner prefers it. Both TextClock formats get the same pattern, so the system's own
+     * 12/24-hour setting cannot override the choice made here.
+     */
+    private void applyClockFormat() {
+        View clockView = findViewById(R.id.clock);
+        if (!(clockView instanceof android.widget.TextClock)) return;
+        boolean hour24 = getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE)
+                .getBoolean(CLOCK_24H, true);
+        String pattern = hour24 ? "HH:mm" : "h:mm a";
+        android.widget.TextClock clock = (android.widget.TextClock) clockView;
+        clock.setFormat12Hour(pattern);
+        clock.setFormat24Hour(pattern);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -632,6 +666,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             return;
         }
         promptsPaused = false;
+        // The panel may have changed the clock or the language while Home was behind it.
+        if (!Lang.chosen(this).equals(appliedLangChoice)) {
+            recreate();
+            return;
+        }
+        applyClockFormat();
         if (rebuildOnResume) {
             tilesReady = false;
             reloadApps(true);
