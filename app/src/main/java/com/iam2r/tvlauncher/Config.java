@@ -48,7 +48,6 @@ final class Config {
     final boolean animations;
     final boolean advancedEffects;
     final int rowsBelowDock;
-    final boolean moduleCards;
     /** Calmer motion for weak GPUs (config.xml, reduced_motion): stiff spring, short fades, no replay. */
     final boolean reducedMotion;
     /** The focused dock app's name in large type above the dock (config.xml, dock_title). */
@@ -60,8 +59,6 @@ final class Config {
     final boolean showHomeSettingsShortcut;
     /** One line under the clock: CPU, free memory, free storage. Off unless config or a theme turns it on. */
     final boolean showStats;
-    /** App library pill after the last Home row (config.xml app_library). */
-    final boolean appLibrary;
     /** Shelf Home (config.xml shelf_mode): only slot_count nest slots, every other app behind the Down key. */
     final boolean shelfMode;
     /** Nest slots on a shelf Home (config.xml slot_count), at least 1. */
@@ -80,8 +77,8 @@ final class Config {
     private Config(List<String> dockApps, boolean fillDock, List<String> hiddenApps, String liveTvPackage,
                    String liveTvAction, String sourcePanelService, String sourcePanelAction, String inputAction,
                    int columns, int rowsBelowDock, boolean animations, boolean advancedEffects,
-                   boolean moduleCards, boolean reducedMotion, boolean dockTitle, boolean dockRow, boolean reorderButton,
-                   boolean showHomeSettingsShortcut, boolean showStats, boolean appLibrary, boolean shelfMode, int slotCount,
+                   boolean reducedMotion, boolean dockTitle, boolean dockRow, boolean reorderButton,
+                   boolean showHomeSettingsShortcut, boolean showStats, boolean shelfMode, int slotCount,
                    int backgroundColor,
                    int[] settingsKeycodes, boolean settingsKeyPanel, File wallpaper, boolean overlayApplied) {
         this.dockApps = Collections.unmodifiableList(dockApps);
@@ -96,14 +93,12 @@ final class Config {
         this.rowsBelowDock = rowsBelowDock;
         this.animations = animations;
         this.advancedEffects = advancedEffects;
-        this.moduleCards = moduleCards;
         this.reducedMotion = reducedMotion;
         this.dockTitle = dockTitle;
         this.dockRow = dockRow;
         this.reorderButton = reorderButton;
         this.showHomeSettingsShortcut = showHomeSettingsShortcut;
         this.showStats = showStats;
-        this.appLibrary = appLibrary;
         this.shelfMode = shelfMode;
         this.slotCount = slotCount;
         this.backgroundColor = backgroundColor;
@@ -132,14 +127,12 @@ final class Config {
         int rowsBelow = res.getInteger(R.integer.rows_below_dock);
         boolean animations = res.getBoolean(R.bool.animations);
         boolean advancedEffects = res.getBoolean(R.bool.advanced_effects);
-        boolean moduleCards = res.getBoolean(R.bool.module_cards);
         boolean reducedMotion = res.getBoolean(R.bool.reduced_motion);
         boolean dockTitle = res.getBoolean(R.bool.dock_title);
         boolean dockRow = res.getBoolean(R.bool.dock_row);
         boolean reorderButton = res.getBoolean(R.bool.reorder_button);
         boolean homeSettings = res.getBoolean(R.bool.show_home_settings_shortcut);
         boolean showStats = res.getBoolean(R.bool.show_stats);
-        boolean library = res.getBoolean(R.bool.app_library);
         boolean shelf = res.getBoolean(R.bool.shelf_mode);
         int slots = res.getInteger(R.integer.slot_count);
         int background = 0xFF000000;
@@ -164,14 +157,12 @@ final class Config {
             rowsBelow = integer(json, "rows_below_dock", rowsBelow, 0, 3);
             animations = bool(json, "animations", animations);
             advancedEffects = bool(json, "advanced_effects", advancedEffects);
-            moduleCards = bool(json, "module_cards", moduleCards);
             reducedMotion = bool(json, "reduced_motion", reducedMotion);
             dockTitle = bool(json, "dock_title", dockTitle);
             dockRow = bool(json, "dock_row", dockRow);
             reorderButton = bool(json, "reorder_button", reorderButton);
             homeSettings = bool(json, "show_home_settings_shortcut", homeSettings);
             showStats = bool(json, "show_stats", showStats);
-            library = bool(json, "app_library", library);
             shelf = bool(json, "shelf_mode", shelf);
             slots = integer(json, "slot_count", slots, 1, Slots.MAX_SLOTS);
             background = color(json, "background_color", background);
@@ -192,7 +183,7 @@ final class Config {
         if (json != null && json.has("wallpaper") && !bool(json, "wallpaper", true)) wallpaper = null;
         return new Config(dock, fillDock, hidden, liveTv, liveTvAction, panelService, panelAction, inputAction,
                 Math.max(1, columns), Math.max(0, rowsBelow), animations, advancedEffects,
-                moduleCards, reducedMotion, dockTitle, dockRow, reorderButton, homeSettings, showStats, library,
+                reducedMotion, dockTitle, dockRow, reorderButton, homeSettings, showStats,
                 shelf, Math.max(1, Math.min(Slots.MAX_SLOTS, slots)), background,
                 settingsKeycodes, settingsKeyPanel, wallpaper, applied);
     }

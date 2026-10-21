@@ -56,8 +56,26 @@ final class Slots {
         return result;
     }
 
+    /** A package name as Android accepts it: dotted, letters/digits/underscore, no leading digit or dot. */
+    static boolean validPackage(String pkg) {
+        if (pkg == null || pkg.isEmpty() || pkg.length() > 255) return false;
+        boolean first = true;
+        for (int i = 0; i < pkg.length(); i++) {
+            char c = pkg.charAt(i);
+            if (c == '.') {
+                if (first) return false;
+                first = true;
+            } else {
+                boolean letter = c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_';
+                if (!letter && (first || c < '0' || c > '9')) return false;
+                first = false;
+            }
+        }
+        return !first;
+    }
+
     private static String validOrEmpty(String pkg) {
-        return LibraryApps.validPackage(pkg) ? pkg : "";
+        return validPackage(pkg) ? pkg : "";
     }
 
     private static List<String> readStrict(AtomicFile file) throws IOException {
@@ -107,7 +125,7 @@ final class Slots {
             if (i < text.length() && text.charAt(i) != '\n') continue;
             if (i == start && i == text.length()) break;
             String pkg = text.substring(start, i);
-            if (!pkg.isEmpty() && !LibraryApps.validPackage(pkg))
+            if (!pkg.isEmpty() && !validPackage(pkg))
                 throw new IllegalArgumentException("Invalid package in the slot file");
             slots.add(pkg);
             if (slots.size() > MAX_SLOTS) throw new IllegalArgumentException("Too many slots");

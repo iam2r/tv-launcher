@@ -224,7 +224,7 @@ final class AppDrawer {
             if (pkg.equals(activity.getPackageName()) || hidden.contains(pkg)) continue;
             ApplicationInfo info = ri.activityInfo.applicationInfo;
             if (info == null) continue;
-            String label = Cards.cleanLabel(String.valueOf(ri.loadLabel(pm)), pkg);
+            String label = AppAdapter.cleanLabel(String.valueOf(ri.loadLabel(pm)), pkg);
             ComponentName component = new ComponentName(pkg, ri.activityInfo.name);
             Item item = new Item(Item.APP, label, pkg, component, ri.loadIcon(pm), tv.contains(pkg), info);
             boolean system = (info.flags & (ApplicationInfo.FLAG_SYSTEM

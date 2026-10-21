@@ -56,14 +56,10 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         /** A shelf slot was pressed while empty: open the app picker for it. */
         void onSlotRequested(int position);
-
-        void onLibraryRequested();
-        void onLibraryFocused();
-        void onLibraryUp();
     }
 
     static final class Entry {
-        static final int APP = 0, HOME_SETTINGS = 1, CARD = 2, EMPTY = 3, SLOT_EMPTY = 4;
+        static final int APP = 0, HOME_SETTINGS = 1, EMPTY = 2, SLOT_EMPTY = 3;
 
         final int kind;
         final String label;
@@ -71,25 +67,53 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         final String pkg;
         final Drawable banner;
         final Drawable icon;
-        /** Text under the tile when it is focused in the grid: the label, plus the caption for a card. */
+        /** Text under the tile when it is focused in the grid. */
         final String name;
-        /** Ambient glow colour; 0 until sampled from the banner, or the card's accent from the start. */
+        /** Ambient glow colour; 0 until sampled from the banner. */
         int ambient;
 
         Entry(String label, ComponentName component, Drawable banner, Drawable icon) {
-            this(APP, label, component, banner, icon, null, 0);
+            this(APP, label, component, banner, icon);
         }
 
-        Entry(int kind, String label, ComponentName component, Drawable banner, Drawable icon, String caption, int accent) {
+        Entry(int kind, String label, ComponentName component, Drawable banner, Drawable icon) {
             this.kind = kind;
             this.label = label;
             this.component = component;
             this.pkg = component.getPackageName();
             this.banner = banner;
             this.icon = icon;
-            this.name = caption == null ? label : label + " \u00B7 " + caption;
-            this.ambient = accent;
+            this.name = label;
         }
+    }
+
+    /**
+     * An app label made safe to draw: control characters and bidi overrides dropped, runs of spaces
+     * collapsed, capped at 40 characters, falling back to the package name when nothing is left (#117).
+     */
+    static String cleanLabel(String s, String fallback) {
+        if (s == null) return fallback;
+        StringBuilder b = new StringBuilder(Math.min(s.length(), 48));
+        boolean space = true;   // leading spaces are dropped too
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            int type = Character.getType(c);
+            boolean blank = c == ' ' || Character.isISOControl(c) || Character.isWhitespace(c) || type == Character.FORMAT
+                    || type == Character.LINE_SEPARATOR || type == Character.PARAGRAPH_SEPARATOR
+                    || type == Character.SPACE_SEPARATOR;
+            if (blank) {
+                if (!space) b.append(' ');
+                space = true;
+                continue;
+            }
+            boolean pair = Character.isHighSurrogate(c) && i + 1 < s.length() && Character.isLowSurrogate(s.charAt(i + 1));
+            if (b.length() + (pair ? 2 : 1) > 40) break;
+            b.append(c);
+            if (pair) b.append(s.charAt(++i));
+            space = false;
+        }
+        String out = b.toString().trim();
+        return out.isEmpty() ? fallback : out;
     }
 
     static final float FOCUS_SCALE = 1.10f;
@@ -191,7 +215,6 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final Set<String> hidden;
     private final boolean animations;
     private final boolean advancedEffects;
-    private final boolean showLibrary;
     /** Packages with a leanback entry at the last reload(): their tiles launch with the leanback category. */
     private Set<String> leanbackPackages = new HashSet<>();
     private final boolean showHomeSettings;
@@ -213,8 +236,6 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         this.animations = cfg.animations;
         this.advancedEffects = cfg.animations && cfg.advancedEffects;
         this.showHomeSettings = cfg.showHomeSettingsShortcut;
-        // A shelf Home has no library pill: every app is one key away, in the drawer.
-        this.showLibrary = cfg.appLibrary && !cfg.shelfMode;
         this.reducedMotion = cfg.reducedMotion;
         this.rowsBelowDock = cfg.rowsBelowDock;
         this.dockTitle = cfg.dockTitle;
@@ -226,11 +247,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         setHasStableIds(true);
     }
 
-    /**
-     * Rebuilds the tiles. A shown module card stands in for every tile of its package (same component,
-     * so focus follows it); hidden_apps wins over a card, and a card's package in dock_apps takes that slot.
-     */
-    void reload(List<Cards.Card> cards) {
+    /** Rebuilds the tiles from what is installed, minus hidden_apps. */
+    void reload() {
         if (shelfMode) {
             reloadShelf();
             return;
@@ -241,18 +259,6 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         Set<String> tvPackages = new HashSet<>();
         for (ResolveInfo ri : found) if (ri.activityInfo != null) tvPackages.add(ri.activityInfo.packageName);
         leanbackPackages = tvPackages;
-        Set<String> added = LibraryApps.load(ctx);
-        Set<String> removed = LibraryApps.loadRemoved(ctx);
-        if (!added.isEmpty()) {
-            Set<String> seen = new HashSet<>(tvPackages);
-            for (ResolveInfo ri : pm.queryIntentActivities(
-                    new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0)) {
-                if (ri.activityInfo != null && added.contains(ri.activityInfo.packageName)
-                        && seen.add(ri.activityInfo.packageName)) found.add(ri);
-            }
-        }
-        Map<String, Cards.Card> cardByPkg = new HashMap<>();
-        for (Cards.Card c : cards) cardByPkg.put(c.pkg, c);
         List<Entry> fresh = new ArrayList<>();
         // Some system apps declare two leanback entry points under one name (Sony's Timers & Clock on the
         // BRAVIA VU31), which would show as two identical tiles: keep the first per package and label.
@@ -260,22 +266,13 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         for (ResolveInfo ri : found) {
             if (ri.activityInfo == null) continue;
             String pkg = ri.activityInfo.packageName;
-            if (pkg.equals(ctx.getPackageName()) || !ri.activityInfo.exported
-                    || !LibraryApps.visible(tvPackages.contains(pkg), hidden.contains(pkg), added.contains(pkg), removed.contains(pkg))) continue;
+            if (pkg.equals(ctx.getPackageName()) || !ri.activityInfo.exported || hidden.contains(pkg)) continue;
             ComponentName component = new ComponentName(pkg, ri.activityInfo.name);
-            Cards.Card card = cardByPkg.get(pkg);
-            if (card != null && !card.component.equals(component)) continue;   // the card stands in for this tile
-            // Same cleaner as the card prompt: an app label with a bidi override or line separator must not
-            // redraw the tile name as something else (#117).
-            String label = card != null ? card.label : Cards.cleanLabel(String.valueOf(ri.loadLabel(pm)), pkg);
+            // An app label with a bidi override or line separator must not redraw the tile name as something
+            // else (#117).
+            String label = cleanLabel(String.valueOf(ri.loadLabel(pm)), pkg);
             if (!seen.add(pkg + '\n' + label)) continue;
-            Drawable banner = loadBanner(pm, ri);
-            Drawable icon = ri.loadIcon(pm);
-            if (card != null) {
-                fresh.add(new Entry(Entry.CARD, label, component, banner, icon, card.caption, card.accent));
-            } else {
-                fresh.add(new Entry(label, component, banner, icon));
-            }
+            fresh.add(new Entry(label, component, loadBanner(pm, ri), ri.loadIcon(pm)));
         }
         Collections.sort(fresh, (a, b) -> {
             // The owner's own order first; tiles it does not know (new installs) follow by the rule below.
@@ -287,9 +284,6 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 if (fb < 0) return -1;
                 return Integer.compare(fa, fb);
             }
-            // Cards come right after the configured dock apps, before the alphabetical grid.
-            boolean ca = a.kind == Entry.CARD, cb = b.kind == Entry.CARD;
-            if (ca != cb) return ca ? -1 : 1;
             return a.label.compareToIgnoreCase(b.label);
         });
         // Retain the optional Default-home tile until dependent tile-ordering work is merged.
@@ -297,14 +291,14 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 && pm.resolveActivity(new Intent(Settings.ACTION_HOME_SETTINGS), 0) != null) {
             fresh.add(new Entry(Entry.HOME_SETTINGS, ctx.getString(R.string.home_settings),
                     new ComponentName(ctx, HomeSettingsActivity.class), null,
-                    ctx.getDrawable(R.drawable.ic_home_settings), null, 0));
+                    ctx.getDrawable(R.drawable.ic_home_settings)));
         }
         docked = 0;
         while (docked < fresh.size() && favourites.contains(fresh.get(docked).pkg)) docked++;
         emptySlots = dockRow && !reordering ? DockSlots.empty(docked, dockSize, fresh.size(), fillDock) : 0;
         for (int i = 0; i < emptySlots; i++) {
             fresh.add(docked + i, new Entry(Entry.EMPTY, "", new ComponentName(ctx, "empty-dock-slot-" + i),
-                    null, null, null, 0));
+                    null, null));
         }
         items.clear();
         items.addAll(fresh);
@@ -341,11 +335,11 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             ResolveInfo ri = pkg.isEmpty() ? null : resolveLaunchActivity(pm, leanback, plain, pkg);
             if (ri == null || ri.activityInfo == null) {
                 fresh.add(new Entry(Entry.SLOT_EMPTY, "", new ComponentName(ctx, "empty-slot-" + i),
-                        null, null, null, 0));
+                        null, null));
                 continue;
             }
             if (tvPackages.contains(pkg)) leanbackPackages.add(pkg);
-            String label = Cards.cleanLabel(String.valueOf(ri.loadLabel(pm)), pkg);
+            String label = cleanLabel(String.valueOf(ri.loadLabel(pm)), pkg);
             fresh.add(new Entry(label, new ComponentName(pkg, ri.activityInfo.name),
                     loadBanner(pm, ri), ri.loadIcon(pm)));
         }
@@ -538,19 +532,6 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (shelfMode) return new SlotHolder(parent, shelfSlots, listener);
-        if (viewType == 1) {
-            View row = LayoutInflater.from(ctx).inflate(R.layout.row_app_library, parent, false);
-            View button = row.findViewById(R.id.btnLibrary);
-            button.setOnClickListener(v -> listener.onLibraryRequested());
-            button.setOnFocusChangeListener((v, focused) -> { if (focused) listener.onLibraryFocused(); });
-            button.setOnKeyListener((v, key, event) -> {
-                if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
-                if (key == KeyEvent.KEYCODE_DPAD_UP) listener.onLibraryUp();
-                return key == KeyEvent.KEYCODE_DPAD_UP || key == KeyEvent.KEYCODE_DPAD_DOWN
-                        || key == KeyEvent.KEYCODE_DPAD_LEFT || key == KeyEvent.KEYCODE_DPAD_RIGHT;
-            });
-            return new RecyclerView.ViewHolder(row) { };
-        }
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_app, parent, false);
         float density = parent.getResources().getDisplayMetrics().density;
         int width = parent.getWidth() > 0 ? parent.getWidth() : parent.getMeasuredWidth();
@@ -581,7 +562,6 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             bindSlot((SlotHolder) holder, position);
             return;
         }
-        if (isLibraryAt(position)) return;
         Holder h = (Holder) holder;
         Entry e = items.get(position);
         if (e.kind == Entry.EMPTY) {
@@ -632,7 +612,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         });
     }
 
-    /** Opens the tile's activity by explicit component, with no extras: a card can name nothing else. */
+    /** Opens the tile's activity by explicit component, with no extras. */
     private void launch(Entry e) {
         if (e.kind == Entry.HOME_SETTINGS) {
             ctx.startActivity(new Intent(ctx, HomeSettingsActivity.class)
@@ -643,7 +623,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 .setComponent(e.component)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         // TV apps launch with the same leanback intent as from the stock launcher or the remote, so an app
-        // already running resumes instead of restarting; only phone apps added from the library use plain MAIN.
+        // already running resumes instead of restarting.
         if (leanbackPackages.contains(e.pkg)) i.addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
         try {
             ctx.startActivity(i);
@@ -657,14 +637,10 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return items.size() + (showLibrary ? 1 : 0);
+        return items.size();
     }
 
     int appCount() { return items.size(); }
-
-    boolean isLibraryAt(int position) { return showLibrary && position == items.size(); }
-
-    @Override public int getItemViewType(int position) { return isLibraryAt(position) ? 1 : 0; }
 
     boolean containsPackage(String pkg) {
         for (Entry entry : items) if (entry.pkg.equals(pkg)) return true;
@@ -673,7 +649,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public long getItemId(int position) {
-        return isLibraryAt(position) ? Long.MIN_VALUE : items.get(position).component.flattenToShortString().hashCode();
+        return items.get(position).component.flattenToShortString().hashCode();
     }
 
     /** Uses this saved order from the next reload() (Order.ranks). */
