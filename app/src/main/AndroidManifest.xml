@@ -111,19 +111,6 @@
                 android:resource="@xml/home_key_service" />
         </service>
 
-        <!-- Screensaver: pick it in Settings, or `settings put secure screensaver_components
-             com.iam2r.tvlauncher/.ClockDream` over adb. -->
-        <service
-            android:name=".ClockDream"
-            android:label="@string/dream_name"
-            android:exported="true"
-            android:permission="android.permission.BIND_DREAM_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.dreams.DreamService" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </service>
-
         <!-- The remote's Input button (KEYCODE_TV) opens the input switcher; see InputKeyService. -->
         <service
             android:name=".InputKeyService"

@@ -30,7 +30,6 @@
     <string name="stats_cpu_unknown">CPU —</string>
     <string name="stats_memory">内存剩余 %1$d MB</string>
     <string name="stats_storage">存储剩余 %1$s</string>
-    <string name="dream_name">时钟</string>
     <string name="reorder">调整应用顺序</string>
     <string name="reorder_hint">按确定选中应用，方向键移动，按返回放下。再按一次返回完成。</string>
     <string name="reorder_not_saved">无法保存新顺序</string>
@@ -109,8 +108,6 @@
     <string name="quick_system_hint">Android 原生设置</string>
     <string name="quick_system_settings">系统设置</string>
     <string name="date_format_home">@string/date_format</string>
-    <string name="vpn">VPN</string>
-    <string name="vpn_off">VPN 已关闭</string>
     <string name="quick_picture">图像</string>
     <string name="quick_network">网络</string>
     <string name="quick_apps">应用</string>
