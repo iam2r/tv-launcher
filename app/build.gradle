@@ -10,8 +10,8 @@ android {
         applicationId 'com.iam2r.tvlauncher'
         minSdk 26
         targetSdk 34
-        versionCode 14
-        versionName '3.0.0'
+        versionCode 15
+        versionName '3.1.0'
     }
 
     // A published build must be signed with the same key every time, or TVs refuse the update. The key comes
