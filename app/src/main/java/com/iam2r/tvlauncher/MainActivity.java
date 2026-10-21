@@ -1475,7 +1475,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     /** Down from a nest slot: every installed app, with the system apps folded into one folder. */
     private void openDrawer() {
-        if (drawer != null) return;
+        if (drawer != null && drawer.isShowing()) return;
+        // A drawer dismissed by the Back key while its action sheet was up never ran onClosed, and the
+        // stale reference made Down do nothing until Home restarted.
+        drawer = null;
         hideGlass();
         hideHero();
         drawer = new AppDrawer(this, animations, reducedMotion, hiddenApps, slots, false, null,
@@ -1493,7 +1496,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** MENU (or OK on an empty slot): choose what this slot holds, from every installed app. */
     private void openSlotPicker(int position) {
         android.util.Log.i("TvHomePin", "picker for slot " + position + " slots=" + slots + " mode=" + shelfMode);
-        if (drawer != null || position < 0 || position >= slotCount) return;
+        if (drawer != null && drawer.isShowing()) return;
+        drawer = null;
+        if (position < 0 || position >= slotCount) return;
         hideGlass();
         hideHero();
         drawer = new AppDrawer(this, animations, reducedMotion, hiddenApps, slots, true,
