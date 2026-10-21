@@ -31,13 +31,6 @@
     <string name="home_settings">Choose default home</string>
     <string name="home_settings_help">Select your original home to stop using CleanYourTV as Home, or CleanYourTV to switch back. The original launcher must be enabled and your TV must provide a home picker; use the restore script first if it was disabled.</string>
     <string name="launcher_settings">Launcher settings</string>
-    <string name="columns_label">Apps per row</string>
-    <string name="animations_state">Animations: %1$s</string>
-    <string name="advanced_effects">Advanced effects</string>
-    <string name="advanced_effects_state">Advanced effects: %1$s</string>
-    <string name="advanced_effects_warning">Adds a lifted tile, icon zoom and smooth colour transitions. May increase memory use; the actual difference depends on your TV.</string>
-    <string name="follow_theme">Follow theme (reset on-TV choices)</string>
-    <string name="follow_theme_hint">Uses the current theme or built-in layout and motion settings. Pushing or resetting a theme also clears your on-TV choices.</string>
     <string name="tv_settings">TV system settings</string>
     <string name="quick_picture">Display</string>
     <string name="quick_network">Network</string>
@@ -125,7 +118,7 @@
     <string name="report_title">This TV</string>
     <string name="report_device">Device: %1$s %2$s · Android %3$s</string>
     <string name="report_config">Config: %1$s</string>
-    <string name="report_config_overlay">a theme in config.json is applied</string>
+    <string name="report_config_overlay">config.json overlay applied</string>
     <string name="report_config_defaults">config.xml defaults only</string>
     <string name="report_home">Home: %1$s, %2$d of %3$d nests filled</string>
     <string name="report_live">Live TV app: %1$s</string>
