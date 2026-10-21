@@ -69,10 +69,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -238,10 +240,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private final Runnable minuteTick = new Runnable() {
         @Override
         public void run() {
+            applyClockFormat();
             updateGreeting();
             updateWifiLabel();
             sky.update();
-            handler.postDelayed(this, MINUTE_MS);
+            scheduleMinuteTick();
         }
     };
 
@@ -643,18 +646,24 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     /**
      * The clock's format follows the panel, not the TV's system setting: 24-hour by default, 12-hour with
-     * am/pm when the owner prefers it. Both TextClock formats get the same pattern, so the system's own
-     * 12/24-hour setting cannot override the choice made here.
+     * am/pm when the owner prefers it. It is a plain TextView redrawn here rather than a TextClock, because
+     * a TextClock only picks up a new format on its next minute tick - the panel's choice looked ignored
+     * until the minute happened to change.
      */
     private void applyClockFormat() {
-        View clockView = findViewById(R.id.clock);
-        if (!(clockView instanceof android.widget.TextClock)) return;
+        TextView clock = findViewById(R.id.clock);
+        if (clock == null) return;
         boolean hour24 = getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE)
                 .getBoolean(CLOCK_24H, true);
-        String pattern = hour24 ? "HH:mm" : "h:mm a";
-        android.widget.TextClock clock = (android.widget.TextClock) clockView;
-        clock.setFormat12Hour(pattern);
-        clock.setFormat24Hour(pattern);
+        SimpleDateFormat format = new SimpleDateFormat(hour24 ? "HH:mm" : "h:mm a", Lang.localeOf(this));
+        clock.setText(format.format(new Date()));
+    }
+
+    /** Posts the next minute tick aligned with the wall clock, so the clock and greeting never lag a minute. */
+    private void scheduleMinuteTick() {
+        handler.removeCallbacks(minuteTick);
+        long now = System.currentTimeMillis();
+        handler.postDelayed(minuteTick, MINUTE_MS - now % MINUTE_MS);
     }
 
     @Override
@@ -682,7 +691,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         updateInputsButton();
         if (showStats) startStats();
         sky.update();
-        handler.postDelayed(minuteTick, MINUTE_MS);
+        scheduleMinuteTick();
         if (festive && diya != null) {
             diya.start();
             LocalDate today = LocalDate.now();

@@ -40,13 +40,24 @@ final class Lang {
         return next;
     }
 
-    /** A base context that reads in the chosen language, or the original one when following the TV. */
+    /**
+     * A base context that reads in the chosen language, or the original one when following the TV.
+     *
+     * <p>{@code Locale.setDefault} is set either way: it sticks for the whole process, so leaving it on an
+     * earlier choice made the TV look like it had two languages at once - Chinese resources, English
+     * weekday names in the date.
+     */
     static Context wrap(Context base) {
+        Configuration baseConfig = base.getResources().getConfiguration();
+        Locale system = baseConfig.getLocales().get(0);
         String tag = chosen(base);
-        if (SYSTEM.equals(tag)) return base;
+        if (SYSTEM.equals(tag)) {
+            Locale.setDefault(system);
+            return base;
+        }
         Locale locale = new Locale(tag);
         Locale.setDefault(locale);
-        Configuration config = new Configuration(base.getResources().getConfiguration());
+        Configuration config = new Configuration(baseConfig);
         config.setLocale(locale);
         return base.createConfigurationContext(config);
     }
